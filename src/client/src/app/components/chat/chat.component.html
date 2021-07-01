@@ -3,6 +3,26 @@
   style="height: 100vh"
 >
   <div class="container w-50">
+    <div class="row w-100 mb-2">
+      <div ngbDropdown class="d-inline-block w-100">
+        <button
+          class="btn btn-outline-primary w-100"
+          id="dropdownBasic1"
+          ngbDropdownToggle
+        >
+          Friends
+        </button>
+        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+          <button
+            ngbDropdownItem
+            *ngFor="let onlineUser of onlineUsers"
+            (click)="setFriendRoom(onlineUser)"
+          >
+            {{ onlineUser.name }}
+          </button>
+        </div>
+      </div>
+    </div>
     <div class="row w-100">
       <div class="overflow-auto" style="height: 25vh">
         <div *ngFor="let message of messages">
@@ -13,7 +33,7 @@
         </div>
       </div>
     </div>
-    <div class="row">
+    <div class="row w-100">
       <div class="col">
         <input
           class="w-100"
@@ -24,7 +44,7 @@
         />
       </div>
       <div class="col">
-        <button class="btn btn-primary w-100" (click)="sendMessage()">
+        <button class="btn btn-success w-100" (click)="sendMessage()">
           Send
         </button>
       </div>

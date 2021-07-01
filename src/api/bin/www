@@ -88,6 +88,7 @@ function onListening() {
  * Socket io server
  */
 
+var onlineUsers = [];
 var socketPort = normalizePort(process.env.PORT || "3001");
 var io = require("socket.io")(socketPort, {
 	cors: {
@@ -95,12 +96,34 @@ var io = require("socket.io")(socketPort, {
 	},
 });
 io.on("connection", (socket) => {
-	console.log(socket.id);
 	socket.on("login", (user) => {
-		console.log("[USER]", user);
+		console.log(socket.id, "[USER]", user);
+		let founded = false;
+		for (let i = 0; i < onlineUsers.length; i++) {
+			const onlineUser = onlineUsers[i];
+			if (onlineUser.nickname === user.nickname) {
+				founded = true;
+				onlineUsers[i].room = socket.id;
+			}
+		}
+		if (!founded) {
+			user.room = socket.id;
+			onlineUsers.push(user);
+		}
+		console.log("[ONLINE]", onlineUsers);
 	});
-	socket.on("message", (message) => {
-		console.log("[MESSAGE]", message);
-		io.emit("new-message", message);
+	socket.on("message", (message, room) => {
+		console.log(socket.id, "[MESSAGE]", message);
+		console.log(socket.id, "[ROOM]", room);
+		socket.broadcast.emit("new-message", message);
+	});
+	socket.on("disconnect", () => {
+		onlineUser = onlineUsers.filter(
+			(onlineUser) => onlineUser.room === socket.id
+		);
+		console.log("[DISCONNECTED]", socket.id);
 	});
 });
+setInterval(() => {
+	io.emit("online-users", onlineUsers);
+}, 5000);
