@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { io } from 'socket.io-client';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { User } from 'src/app/models/user';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -7,14 +10,25 @@ import { io } from 'socket.io-client';
   styleUrls: ['./login.component.css'],
 })
 export class LoginComponent implements OnInit {
-  socket: any = io('http://localhost:3001');
+  loginForm = new FormGroup({
+    nickname: new FormControl('', Validators.required),
+    password: new FormControl('', Validators.required),
+  });
 
-  constructor() {
-    this.socket.on('connect', () => {
-      console.log(this.socket.id);
-    });
-    this.socket.emit('custom-event', 'hello');
-  }
+  constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {}
+
+  onSubmit(): void {
+    let { nickname, password } = this.loginForm.value;
+    this.authService.login(nickname, password).subscribe(
+      (response: User) => {
+        this.authService.user = response;
+        this.router.navigateByUrl('/chat');
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }
 }
