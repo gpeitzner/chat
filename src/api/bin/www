@@ -8,6 +8,7 @@ var app = require("../app");
 var debug = require("debug")("api:server");
 var http = require("http");
 var axios = require("axios");
+const { ChartJSNodeCanvas } = require("chartjs-node-canvas");
 /**
  * Get port from environment and store in Express.
  */
@@ -182,11 +183,19 @@ io.on("connection", (socket) => {
 							break;
 						} else if (onlineUser.graph.date === "") {
 							onlineUsers[i].graph.date = message.content;
-							io.to(socket.id).emit("new-message", {
-								nickname: "BOT",
-								content: "Estoy listo!",
-							});
-							delete onlineUsers[i].graph;
+
+							generateGraph(
+								onlineUsers[i].graph.country,
+								onlineUsers[i].graph.date
+							)
+								.then((dataUrl) => {
+									io.to(socket.id).emit("new-message", {
+										nickname: "BOT",
+										content: dataUrl,
+									});
+								})
+								.catch((error) => console.error(error))
+								.finally(() => delete onlineUsers[i].graph);
 							break;
 						}
 					}
@@ -229,6 +238,7 @@ function generateSimpleReport(country, date, type) {
 				const dayInfo = countryData.timeSeries.find(
 					(record) => record.date === date
 				);
+				console.log(dayInfo);
 				if (type === "confirmados") {
 					resolve({
 						nickname: "BOT",
@@ -264,5 +274,70 @@ function generateSimpleReport(country, date, type) {
 			.catch((error) => {
 				reject(error);
 			});
+	});
+}
+
+function generateGraph(country, date) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			const data = await getData();
+			let clearDates = date.split(" ");
+			let lowerDate = Date.parse(clearDates[0]);
+			let upperDate = Date.parse(clearDates[2]);
+			const countryData = data[country];
+			let labels = [];
+			let confirmed = [];
+			let deaths = [];
+			let recovered = [];
+			for (let i = 0; i < countryData.timeSeries.length; i++) {
+				const record = countryData.timeSeries[i];
+				if (
+					Date.parse(record.date) >= lowerDate &&
+					Date.parse(record.date) <= upperDate
+				) {
+					labels.push(record.date);
+					confirmed.push(record.confirmed);
+					deaths.push(record.deaths);
+					recovered.push(record.recovered);
+				}
+			}
+			const config = {
+				type: "line",
+				data: {
+					labels: labels,
+					datasets: [
+						{
+							label: "Confirmados",
+							data: confirmed,
+							fill: false,
+							borderColor: "rgb(255, 0, 0)",
+							tension: 0.1,
+						},
+						{
+							label: "Recuperados",
+							data: recovered,
+							fill: false,
+							borderColor: "rgb(0, 255, 0)",
+							tension: 0.1,
+						},
+						{
+							label: "Muertos",
+							data: deaths,
+							fill: false,
+							borderColor: "rgb(0, 0, 0)",
+							tension: 0.1,
+						},
+					],
+				},
+			};
+			const width = 400;
+			const height = 400;
+			const chartJSNodeCanvas = new ChartJSNodeCanvas({ width, height });
+			const configuration = config;
+			const dataUrl = await chartJSNodeCanvas.renderToDataURL(configuration);
+			resolve(dataUrl);
+		} catch (error) {
+			reject(error);
+		}
 	});
 }

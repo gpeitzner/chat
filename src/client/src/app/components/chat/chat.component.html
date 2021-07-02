@@ -25,12 +25,18 @@
       </div>
     </div>
     <div class="row w-100">
-      <div #scrollMe class="overflow-auto w-100" style="height: 25vh">
+      <div #scrollMe class="overflow-auto w-100" style="height: 50vh">
         <div *ngFor="let message of messages">
           <span
             ><strong>{{ message.nickname + ": " }}</strong></span
           >
-          <span>{{ message.content }}</span>
+          <span *ngIf="!message.content.includes('data:image/png;base64')">{{
+            message.content
+          }}</span>
+          <img
+            [src]="message.content"
+            *ngIf="message.content.includes('data:image/png;base64')"
+          />
         </div>
       </div>
     </div>
@@ -42,6 +48,7 @@
           name="message"
           id="message"
           [(ngModel)]="message"
+          (keydown.enter)="sendMessage()"
         />
       </div>
       <div class="col">
