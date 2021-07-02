@@ -25,7 +25,7 @@
       </div>
     </div>
     <div class="row w-100">
-      <div class="overflow-auto" style="height: 25vh">
+      <div #scrollMe class="overflow-auto w-100" style="height: 25vh">
         <div *ngFor="let message of messages">
           <span
             ><strong>{{ message.nickname + ": " }}</strong></span

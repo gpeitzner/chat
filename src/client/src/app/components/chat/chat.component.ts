@@ -1,4 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+  AfterViewChecked,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { io } from 'socket.io-client';
 import { Message } from 'src/app/models/message';
@@ -11,6 +17,9 @@ import { environment } from 'src/environments/environment';
   styleUrls: ['./chat.component.css'],
 })
 export class ChatComponent implements OnInit {
+  @ViewChild('scrollMe')
+  private myScrollContainer!: ElementRef;
+
   socket: any = io(environment.socketUrl);
   messages: Message[] = [];
   message: string = '';
@@ -37,7 +46,20 @@ export class ChatComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.scrollToBottom();
+  }
+
+  ngAfterViewChecked() {
+    this.scrollToBottom();
+  }
+
+  scrollToBottom(): void {
+    try {
+      this.myScrollContainer.nativeElement.scrollTop =
+        this.myScrollContainer.nativeElement.scrollHeight;
+    } catch (err) {}
+  }
 
   sendMessage(): void {
     if (this.friendRoom !== '' && this.message !== '') {

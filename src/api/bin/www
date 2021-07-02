@@ -115,7 +115,80 @@ io.on("connection", (socket) => {
 	socket.on("message", (message, room) => {
 		console.log(socket.id, "[MESSAGE]", message);
 		console.log(socket.id, "[ROOM]", room);
-		socket.to(room).emit("new-message", message);
+		let itsBot = onlineUsers.find(
+			(onlineUser) => onlineUser.room === room && onlineUser.bot
+		);
+		if (itsBot) {
+			for (let i = 0; i < onlineUsers.length; i++) {
+				const onlineUser = onlineUsers[i];
+				if (onlineUser.room === socket.id) {
+					if (message.content.includes("!Casos") || onlineUser.cases) {
+						if (!onlineUser.cases) {
+							io.to(socket.id).emit("new-message", {
+								nickname: "BOT",
+								content: "Pais?",
+							});
+							onlineUsers[i].cases = { country: "" };
+							break;
+						} else if (onlineUser.cases.country === "") {
+							onlineUsers[i].cases.country = message.content;
+							io.to(socket.id).emit("new-message", {
+								nickname: "BOT",
+								content: "Fecha?",
+							});
+							onlineUser.cases.date = "";
+							break;
+						} else if (onlineUser.cases.date === "") {
+							onlineUsers[i].cases.date = message.content;
+							io.to(socket.id).emit("new-message", {
+								nickname: "BOT",
+								content: "Tipo de casos?",
+							});
+							onlineUsers[i].cases.type = "";
+							break;
+						} else if (onlineUser.cases.type === "") {
+							onlineUsers[i].cases.type = message.content;
+							io.to(socket.id).emit("new-message", {
+								nickname: "BOT",
+								content: "Estoy listo!",
+							});
+							delete onlineUsers[i].cases;
+							break;
+						}
+					} else if (
+						message.content.toString().includes("!Grafica") ||
+						onlineUser.graph
+					) {
+						if (!onlineUser.graph) {
+							io.to(socket.id).emit("new-message", {
+								nickname: "BOT",
+								content: "Pais?",
+							});
+							onlineUsers[i].graph = { country: "" };
+							break;
+						} else if (onlineUser.graph.country === "") {
+							onlineUsers[i].graph.country = message.content;
+							io.to(socket.id).emit("new-message", {
+								nickname: "BOT",
+								content: "Fecha?",
+							});
+							onlineUser.graph.date = "";
+							break;
+						} else if (onlineUser.graph.date === "") {
+							onlineUsers[i].graph.date = message.content;
+							io.to(socket.id).emit("new-message", {
+								nickname: "BOT",
+								content: "Estoy listo!",
+							});
+							delete onlineUsers[i].graph;
+							break;
+						}
+					}
+				}
+			}
+		} else {
+			socket.to(room).emit("new-message", message);
+		}
 	});
 	socket.on("disconnect", () => {
 		onlineUser = onlineUsers.filter(

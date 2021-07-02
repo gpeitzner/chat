@@ -15,6 +15,6 @@ module.exports = [
 		name: "Thor",
 		nickname: "thor",
 		password: "123",
-		bot: false,
+		bot: true,
 	},
 ];
