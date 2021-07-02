@@ -17,7 +17,7 @@ export class ChatComponent implements OnInit {
   friendRoom: string = '';
   onlineUsers: any[] = [];
 
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(public authService: AuthService, private router: Router) {
     if (!this.authService.user) {
       this.router.navigateByUrl('login');
     } else {

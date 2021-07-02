@@ -11,4 +11,10 @@ module.exports = [
 		password: "asd",
 		bot: false,
 	},
+	{
+		name: "Thor",
+		nickname: "thor",
+		password: "123",
+		bot: false,
+	},
 ];
