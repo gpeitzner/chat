@@ -8,7 +8,7 @@ import { User } from '../models/user';
   providedIn: 'root',
 })
 export class AuthService {
-  API_URL: string = environment.apiUrl + "users";
+  API_URL: string = environment.apiUrl + 'users';
   user: any;
 
   constructor(private http: HttpClient) {}
@@ -17,6 +17,20 @@ export class AuthService {
     return this.http.post<User>(this.API_URL, {
       nickname: nickname,
       password: password,
+    });
+  }
+
+  signup(
+    name: string,
+    nickname: string,
+    password: string,
+    bot: string
+  ): Observable<User> {
+    return this.http.post<User>(this.API_URL + '/signup', {
+      name: name,
+      nickname: nickname,
+      password: password,
+      bot: bot,
     });
   }
 }
